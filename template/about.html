@@ -1,6 +1,8 @@
-{% extends "main.html" %}
+{% extends "structure.html" %}
 
 {% block main %}
-    <p>hi, i'm anna and i dont like upper case letters. idk what to tell about myself, i prefer to start learning</p>
-    <img src="{{url_for('static', filename='me.jpg')}}" style="width:256px"/>
+<h3>about us</h3>
+<p>hi, i'm anna and i dont like upper case letters. idk what to tell about myself, i prefer to start learning</p>
+<img src="{{url_for('static', filename='me.jpg')}}" style="width:256px" />
+<a href="/">home</a>
 {% endblock main %}
