@@ -1,13 +1,30 @@
-from flask import Flask, render_template, request, redirect
+from flask import Flask, render_template, request, redirect, session, url_for, g
 import model
 
 app = Flask(__name__, template_folder='template', static_folder='static')
+app.secret_key = 'dontstare'
 
 
-@app.route('/', methods=['GET'])
+username = ''
+users = model.get_all_users()
+
+
+@app.route('/', methods=['GET', 'POST'])
 def home():
-    if request.method == 'GET':
-        return render_template('index.html', message='welcome')
+    if request.method == 'POST':
+        if 'username' in session:
+            g.user = session['username']
+            return redirect('dashboard')
+        return render_template('index.html')
+    
+    return render_template('index.html')
+
+
+@app.before_request
+def before_request():
+    g.username = None
+    if 'username' in session:
+        g.username = session['username']
 
 
 @app.route('/login', methods=['GET', 'POST'])
@@ -15,12 +32,13 @@ def login():
     if request.method == 'GET':
         return render_template('login.html')
     else:
-        username = request.form['username']
-        password = request.form['password']
-        if model.auth_user(username, password):
+        session.pop('username', None)
+        user, password = request.form['username'], request.form['password']
+        if model.auth_user(user, password):
+            session['username'] = user
             return redirect('/dashboard')
-        else:
-            return render_template('login.html', message='login failed')
+
+        return render_template('login.html', message='login failed')
 
 
 @app.route('/signup', methods=['GET', 'POST'])
@@ -40,9 +58,22 @@ def signup():
         return redirect('/login')
 
 
+@app.route('/getsession')
+def getsession():
+    if 'username' in session:
+        return session['username']
+    return redirect('/login')
+
+
+@app.route('/logout')
+def logout():
+    session.pop('username', None)
+    return redirect('/')
+
+
 @app.route('/dashboard', methods=['GET'])
 def dashboard():
-    return render_template('dashboard.html')
+    return render_template('temp.html')
 
 
 @app.route('/terms', methods=['GET'])
